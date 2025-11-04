@@ -4,6 +4,8 @@
 
 // This example uses `uniffi::` macros to describe the interface.
 
+use pulldown_cmark::{Parser, html};
+
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum ArithmeticError {
     #[error("Integer overflow on an operation with {a} and {b}")]
@@ -33,6 +35,13 @@ fn div(dividend: u64, divisor: u64) -> u64 {
 #[uniffi::export]
 fn equal(a: u64, b: u64) -> bool {
     a == b
+}
+#[uniffi::export]
+pub fn parse_markdown(markdown: &str) -> String {
+    let parser = Parser::new(markdown);
+    let mut html_output = String::new();
+    html::push_html(&mut html_output, parser);
+    html_output
 }
 
 type Result<T, E = ArithmeticError> = std::result::Result<T, E>;

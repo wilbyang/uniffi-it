@@ -639,6 +639,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Short
     external fun uniffi_arithmetic_checksum_func_equal(
     ): Short
+    external fun uniffi_arithmetic_checksum_func_parse_markdown(
+    ): Short
     external fun uniffi_arithmetic_checksum_func_sub(
     ): Short
     external fun ffi_arithmetic_uniffi_contract_version(
@@ -660,6 +662,8 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_arithmetic_fn_func_equal(`a`: Long,`b`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_arithmetic_fn_func_parse_markdown(`markdown`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_arithmetic_fn_func_sub(`a`: Long,`b`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun ffi_arithmetic_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -788,6 +792,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_arithmetic_checksum_func_equal() != 34597.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_arithmetic_checksum_func_parse_markdown() != 42185.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_arithmetic_checksum_func_sub() != 52393.toShort()) {
@@ -1078,6 +1085,16 @@ public object FfiConverterTypeArithmeticError : FfiConverterRustBuffer<Arithmeti
     UniffiLib.uniffi_arithmetic_fn_func_equal(
     
         FfiConverterULong.lower(`a`),FfiConverterULong.lower(`b`),_status)
+}
+    )
+    }
+    
+ fun `parseMarkdown`(`markdown`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_arithmetic_fn_func_parse_markdown(
+    
+        FfiConverterString.lower(`markdown`),_status)
 }
     )
     }

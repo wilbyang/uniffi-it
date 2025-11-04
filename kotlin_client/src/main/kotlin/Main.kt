@@ -2,6 +2,7 @@ import uniffi.arithmetic.add
 import uniffi.arithmetic.sub
 import uniffi.arithmetic.div
 import uniffi.arithmetic.equal
+import uniffi.arithmetic.parseMarkdown
 import uniffi.arithmetic.ArithmeticException
 import java.nio.file.Paths
 
@@ -27,6 +28,9 @@ fun main() {
     println("20 / 5 = ${div(20u, 5u)}")
     println("equal(5,5) = ${equal(5u,5u)}")
     println("equal(5,6) = ${equal(5u,6u)}")
+    val md = "# Hello\nThis is **Markdown**."
+    val html = parseMarkdown(md)
+    println("Markdown parsed to HTML:\n$html\n")
 
     // Demonstrate overflow error from Rust (checked add)
     try {

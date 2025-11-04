@@ -24,6 +24,6 @@ application {
 sourceSets {
     main {
         // Use only the freshly generated bindings (nested path) to avoid duplicate classes.
-        kotlin.srcDir("../out/uniffi/arithmetic/uniffi/arithmetic")
+        kotlin.srcDir("../out/uniffi/arithmetic")
     }
 }
