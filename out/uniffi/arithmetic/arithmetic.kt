@@ -352,7 +352,7 @@ private fun findLibraryName(componentName: String): String {
     if (libOverride != null) {
         return libOverride
     }
-    return "uniffi_arithmetic"
+    return "arithmetic"
 }
 
 // Define FFI callback types
@@ -781,16 +781,16 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 }
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
-    if (lib.uniffi_arithmetic_checksum_func_add() != 22506.toShort()) {
+    if (lib.uniffi_arithmetic_checksum_func_add() != 25295.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_arithmetic_checksum_func_div() != 868.toShort()) {
+    if (lib.uniffi_arithmetic_checksum_func_div() != 7757.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_arithmetic_checksum_func_equal() != 57369.toShort()) {
+    if (lib.uniffi_arithmetic_checksum_func_equal() != 34597.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_arithmetic_checksum_func_sub() != 61182.toShort()) {
+    if (lib.uniffi_arithmetic_checksum_func_sub() != 52393.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -993,14 +993,24 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
 
 
 
-sealed class ArithmeticException(message: String): kotlin.Exception(message) {
+sealed class ArithmeticException: kotlin.Exception() {
+    
+    class IntegerOverflow(
         
-        class IntegerOverflow(message: String) : ArithmeticException(message)
+        val `a`: kotlin.ULong, 
         
+        val `b`: kotlin.ULong
+        ) : ArithmeticException() {
+        override val message
+            get() = "a=${ `a` }, b=${ `b` }"
+    }
+    
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<ArithmeticException> {
         override fun lift(error_buf: RustBuffer.ByValue): ArithmeticException = FfiConverterTypeArithmeticError.lift(error_buf)
     }
+
+    
 }
 
 /**
@@ -1009,21 +1019,33 @@ sealed class ArithmeticException(message: String): kotlin.Exception(message) {
 public object FfiConverterTypeArithmeticError : FfiConverterRustBuffer<ArithmeticException> {
     override fun read(buf: ByteBuffer): ArithmeticException {
         
-            return when(buf.getInt()) {
-            1 -> ArithmeticException.IntegerOverflow(FfiConverterString.read(buf))
+
+        return when(buf.getInt()) {
+            1 -> ArithmeticException.IntegerOverflow(
+                FfiConverterULong.read(buf),
+                FfiConverterULong.read(buf),
+                )
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
-        
     }
 
     override fun allocationSize(value: ArithmeticException): ULong {
-        return 4UL
+        return when(value) {
+            is ArithmeticException.IntegerOverflow -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterULong.allocationSize(value.`a`)
+                + FfiConverterULong.allocationSize(value.`b`)
+            )
+        }
     }
 
     override fun write(value: ArithmeticException, buf: ByteBuffer) {
         when(value) {
             is ArithmeticException.IntegerOverflow -> {
                 buf.putInt(1)
+                FfiConverterULong.write(value.`a`, buf)
+                FfiConverterULong.write(value.`b`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
